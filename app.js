@@ -13,4 +13,4 @@ app.use(express.urlencoded({extended:false}));
 
 app.use('/nekatel/api/crm',crmApi);
 
-app.listen(config.port,console.log(`it is running on ${config.port}`));
+app.listen(config.port,console.log(`it is running on ${config.port}`)); 
