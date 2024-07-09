@@ -13,6 +13,7 @@
   "dependencies": {
     "axios": "^1.7.2",
     "config": "^3.3.12",
+    "crypto-js": "^4.2.0",
     "express": "^4.19.2",
     "form-data": "^4.0.0",
     "formdata-node": "^6.0.3",
