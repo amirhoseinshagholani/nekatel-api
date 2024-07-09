@@ -5,8 +5,10 @@ import axios from "axios";
 import FormData from "form-data";
 import multer from "multer";
 
+import fs from 'fs';
+
 const router = express.Router();
-const upload = multer();
+const upload = multer({ dest: 'default/' });
 
 const getSessionName = async () => {
   try {
@@ -58,32 +60,75 @@ router.get("/getData", async (req, res) => {
   }
 });
 
-//create
-router.post("/postData", upload.none(), async (req, res) => {
-  try {
-    const sessionName = await getSessionName();
-    const element = req.body.element;
-    const elementType = req.body.elementType;
+router.post("/postData", upload.single('file'), async (req, res) => {
+    try {
+      const sessionName = await getSessionName();
+      const element = req.body.element;
+      const elementType = req.body.elementType;
+  
+      const formData = new FormData();
+      formData.append("operation", "create");
+      formData.append("sessionName", sessionName);
+      formData.append("element", element);
+      formData.append("elementType", elementType);
+      axios.post("https://neka.crm24.io/webservice.php", formData, {
+          headers: formData.getHeaders(),
+        })
+        .then((response) => {
+          console.log(response.data);
+          res.json({ message: `${elementType} updated` });
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
 
-    const formData = new FormData();
-    formData.append("operation", "create");
-    formData.append("sessionName", sessionName);
-    formData.append("element", element);
-    formData.append("elementType", elementType);
-    axios.post("https://neka.crm24.io/webservice.php", formData, {
-        headers: formData.getHeaders(),
-      })
-      .then((response) => {
-        console.log(response.data);
-        res.json({ message: `${elementType} updated` });
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+//create
+// router.post("/postData", upload.single('file'), async (req, res) => {
+//   try {
+//     const fileName = 'public/pic.jpg';
+//     var fileStat = fs.statSync(fileName);
+// console.log(req.body.file);
+//     const sessionName = await getSessionName();
+//     // const element = req.body.element;
+//     const element = {
+//         "notes_title": "pic",
+//         "filename": "pic.jpg",
+//         "filetype": "image/jpg",
+//         "filesize": "10000",
+//         "filelocationtype": "I",
+//         "filestatus": "1",
+//         "assigned_user_id": "64x53821"
+//     };
+//     const elementType = req.body.elementType;
+// // res.json(element);
+//     const formData = new FormData();
+//     formData.append("operation", "create");
+//     formData.append("sessionName", sessionName);
+//     formData.append("element", JSON.stringify(element));
+//     formData.append("elementType", elementType);
+//     formData.append("file",fs.createReadStream(fileName));
+
+//     axios.post("https://neka.crm24.io/webservice.php", formData, {
+//         headers: formData.getHeaders(),
+//         maxBodyLength: Infinity
+//       })
+//       .then((response) => {
+//         console.log(response.data);
+//         res.json({ message: `${elementType} updated` });
+//       })
+//       .catch((error) => {
+//         console.error("Error:", error);
+//       });
+//   } catch (error) {
+//     console.error("Error:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+//   /* {"firstname":"aaaaaa","lastname":"bbbbbb","phone":"55442299","mobile":"09125551130","assigned_user_id":"64x53821","cf_1677":"64x53821","cf_1123":"3621450879","description":"jjjj","mailingstate":"rtyhrt","mailingcity":"yhrt","mailingstreet":"rtyhrt","leadsource":"معرفی از طرف نماینده"} */
+// });
 
 export default router;
