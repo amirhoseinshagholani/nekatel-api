@@ -10,10 +10,10 @@ import fs from 'fs';
 const router = express.Router();
 const upload = multer({ dest: 'default/' });
 
-const getSessionName = async () => {
+const getSessionName = async (username) => {
   try {
     const response_get_token = await fetch(
-      "https://neka.crm24.io/webservice.php?operation=getchallenge&username=birashk@outlook.com",
+      `https://neka.crm24.io/webservice.php?operation=getchallenge&username=${username}`,
       {
         method: "GET",
       }
@@ -44,7 +44,8 @@ const getSessionName = async () => {
 
 //query
 router.get("/getData", async (req, res) => {
-  const sessionName = await getSessionName();
+  const username = req.body.username;
+  const sessionName = await getSessionName(username);
   const query = req.body.query;
   try {
     const response = await fetch(
@@ -62,7 +63,8 @@ router.get("/getData", async (req, res) => {
 
 router.post("/postData", upload.single('file'), async (req, res) => {
     try {
-      const sessionName = await getSessionName();
+      const username = req.body.username;
+      const sessionName = await getSessionName(username);
       const element = req.body.element;
       const elementType = req.body.elementType;
   

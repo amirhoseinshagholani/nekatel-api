@@ -137,13 +137,29 @@ router.get("/getAllServicesOfUser", async (req, res) => {
 })
 
 router.post("/AddServiceToUser",upload.none(),async(req,res)=>{
-    // {
-    //     "Action": "add",
-    //     "User_Id": "6",
-    //     "Service_Id": "63",
-    //     "PayPlan": "PostPaid"
-    // }
-    res.json(req.body);
+    try{
+        const Api_user = req.body.Api_User;
+        const Api_pass = req.body.Api_Pass;
+        const username = req.body.username;
+        const service_Id = req.body.Service_Id;
+        const auth = await getToken(Api_user, Api_pass);
+        const user = await getUserId(username,auth.token);
+        var formData = new FormData();
+        formData.append("Action","add");
+        formData.append("User_Id",user.user_id);
+        formData.append("Service_Id",service_Id);
+        formData.append("PayPlan","PostPaid");
+        console.log(auth.token);
+        const response = await axios.post("https://185.126.8.124:1043/1.0/user.service.base/",formData,{
+            headers:{
+                Authorization:`Bearer ${auth.token}`
+            },
+            httpsAgent:agent
+        });
+        res.json(response.data);
+    }catch(err){
+        res.json(err);
+    }
 })
 
 export default router;
