@@ -22,7 +22,7 @@ const getToken = async (Api_user, Api_pass) => {
         formData.append("Api_Key", api_key);
 
         const response = await axios.post("https://185.126.8.124:1043/1.0/auth/", formData, {
-            headers: formData.getHeaders(),
+            headers: formData.getHeaders(), 
             httpsAgent: agent
         });
         return response.data;
