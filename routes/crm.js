@@ -4,11 +4,9 @@ import md5 from "md5";
 import axios from "axios";
 import FormData from "form-data";
 import multer from "multer";
-
 import fs from 'fs';
 
 const router = express.Router();
-
 const storage = multer.memoryStorage();
 const upload = multer({ storage:storage });
 
@@ -45,10 +43,12 @@ const getSessionName = async (username) => {
 };
 
 //query
-router.get("/getData", async (req, res) => {
-  const username = req.body.username;
+router.post("/getData", async (req, res) => {
+  
+  const username = await req.body.username;
   const sessionName = await getSessionName(username);
-  const query = req.body.query;
+  const query = await req.body.query;
+  
   try {
     const response = await fetch(
       `https://neka.crm24.io/webservice.php?operation=query&sessionName=${sessionName}&query=${query};`,
@@ -66,17 +66,17 @@ router.get("/getData", async (req, res) => {
 router.post("/postData", upload.single('file'), async (req, res) => {
     try {
       if(!req.file){
-        const username = req.body.username;
+        const username = await req.body.username;
         const sessionName = await getSessionName(username);
-        const element = req.body.element;
-        const elementType = req.body.elementType;
+        const element = await req.body.element;
+        const elementType = await req.body.elementType;
     
         const formData = new FormData();
         formData.append("operation", "create");
         formData.append("sessionName", sessionName);
         formData.append("element", element);
         formData.append("elementType", elementType);
-        axios.post("https://neka.crm24.io/webservice.php", formData, {
+        await axios.post("https://neka.crm24.io/webservice.php", formData, {
             headers: formData.getHeaders(),
           })
           .then((response) => {
