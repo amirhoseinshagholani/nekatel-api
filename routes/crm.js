@@ -4,15 +4,16 @@ import md5 from "md5";
 import axios from "axios";
 import FormData from "form-data";
 import multer from "multer";
-import fs from 'fs';
+import fs from "fs";
 import cors from "cors";
 
 const router = express.Router();
 const storage = multer.memoryStorage();
-const upload = multer({ storage:storage });
+const upload = multer({ storage: storage });
 
 router.use(cors());
 
+//query
 const getSessionName = async (username) => {
   try {
     const response_get_token = await fetch(
@@ -23,79 +24,127 @@ const getSessionName = async (username) => {
     );
 
     const token = await response_get_token.json();
+
     const AUTH_TOKEN = "SilbiFn0g0jZs5Ln";
     const initial_token = token.result.token + AUTH_TOKEN;
-    const accessKey = md5(initial_token);
 
+    const accessKey = md5(initial_token);
+ 
     const formData = new FormData();
     formData.append("operation", "login");
-    formData.append("username", "birashk@outlook.com");
+    formData.append("username", username);
     formData.append("accessKey", accessKey);
-    const data = await axios.post('https://neka.crm24.io/webservice.php',formData,{
-      headers: formData.getHeaders(),
-    }).then((res)=>{
-      return res.data.result.sessionName;
-    }).catch(err=>{
-      console.log(err);
-    });
 
-    return data;
+    const data = await axios.post("https://neka.crm24.io/webservice.php", formData, {
+        headers: formData.getHeaders(),
+      })
+      .then((res) => {
+        console.log("Status of sessionName is "+res.data.success);
+        if(res.data.success){
+          return res.data.result.sessionName;
+        }else{
+          return false;
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+      
+      if(data){
+        return data;
+      }else{
+        return false;
+      }
   } catch (error) {
     console.error("Error:", error);
-    throw new Error("Something went wrong");  
+    throw new Error("Something went wrong");
   }
 };
- 
-//query
+
 router.post("/getData", async (req, res) => {
-  
-  const username = await req.body.username;
-  const sessionName = await getSessionName(username);
-  const query = await req.body.query;
-   
-  try {
-    const response = await fetch(
-      `https://neka.crm24.io/webservice.php?operation=query&sessionName=${sessionName}&query=${query};`,
-      {
-        method: "GET",
-      }
-    );
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: "Something went wrong" });
+  const username = req.body.username;
+  const query = req.body.query;
+
+  var sessionName='';
+  if(username){
+    sessionName = await getSessionName(username);
+  }else{
+    console.log("username is null!");
+    res.json("username is null!");
+    return;
   }
+
+  if(!query){
+    res.json("query is null!");
+    return;
+  }
+  
+  if(sessionName){
+    console.log("sessionName: " + sessionName);
+    try {
+      const response = await fetch(
+        `https://neka.crm24.io/webservice.php?operation=query&sessionName=${sessionName}&query=${query};`,
+        {
+          method: "GET",
+        }
+      );
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({ error: "Something went wrong" });
+    }
+  }else{
+    console.log("sessionName is null!");
+    res.json("sessionName is null!");
+    return false;
+  }
+
+  
 });
 
-router.post("/postData", upload.single('file'), async (req, res) => {
-    try {
-      if(!req.file){
-        const username = await req.body.username;
-        const sessionName = await getSessionName(username);
-        const element = await req.body.element;
-        const elementType = await req.body.elementType;
-    return;
-        const formData = new FormData();
-        formData.append("operation", "create");
-        formData.append("sessionName", sessionName);
-        formData.append("element", element);
-        formData.append("elementType", elementType);
-        await axios.post("https://neka.crm24.io/webservice.php", formData, {
-            headers: formData.getHeaders(),
-          })
-          .then((response) => {
-            console.log(response.data);
-            res.json({ message: `${elementType} updated` });
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
+router.post("/postData", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      const username =  req.body.username;
+      const element =  req.body.element;
+      const elementType =  req.body.elementType;
+
+      var sessionName='';
+      if(username){
+        sessionName = await getSessionName(username);
+      }else{
+        console.log("username is null!");
+        res.json("username is null!");
+        return;
       }
-    } catch (error) {
-      console.error("Error:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+
+      const formData = new FormData();
+      formData.append("operation", "create");
+      formData.append("sessionName", sessionName);
+      formData.append("element", element);
+      formData.append("elementType", elementType);
+      if(formData){
+        await axios.post("https://neka.crm24.io/webservice.php", formData, {
+          headers: formData.getHeaders(),
+        })
+        .then((response) => {
+          console.log(response.data);
+          res.json({ message: `${elementType} updated` });
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+      }else{
+        return false;
+      }
+
     }
-  });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 // create
 // router.post("/postData", upload.single('file'), async (req, res) => {
