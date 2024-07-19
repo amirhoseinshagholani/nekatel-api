@@ -61,24 +61,31 @@ const getSessionName = async (username) => {
   }
 };
 
-router.post("/getData", async (req, res) => {
-  const username = req.body.username;
-  const query = req.body.query;
-
-  var sessionName='';
-  if(username){
-    sessionName = await getSessionName(username);
-  }else{
-    console.log("username is null!");
-    res.json("username is null!");
-    return;
+router.post("/getSessionName",async(req,res)=>{
+  try{
+    const username = req.body.username;
+    if(username){
+      const sessionName = await getSessionName(username);
+      res.json(sessionName);
+    }else{
+      console.log("username is null!");
+      res.json("username is null!");
+      return;
+    }
+  }catch(err){
+    console.log(err);
   }
+})
+
+router.post("/getData", async (req, res) => {
+  const sessionName = req.body.sessionName;
+  const query = req.body.query;
 
   if(!query){
     res.json("query is null!");
     return;
   }
-  
+
   if(sessionName){
     console.log("sessionName: " + sessionName);
     try {
@@ -88,9 +95,8 @@ router.post("/getData", async (req, res) => {
           method: "GET",
         }
       );
-
       const data = await response.json();
-      res.json(data);
+      res.send(data);
     } catch (error) {
       res.status(500).json({ error: "Something went wrong" });
     }
@@ -99,25 +105,14 @@ router.post("/getData", async (req, res) => {
     res.json("sessionName is null!");
     return false;
   }
-
-  
 });
 
 router.post("/postData", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
-      const username =  req.body.username;
+      const sessionName =  req.body.sessionName;
       const element =  req.body.element;
       const elementType =  req.body.elementType;
-
-      var sessionName='';
-      if(username){
-        sessionName = await getSessionName(username);
-      }else{
-        console.log("username is null!");
-        res.json("username is null!");
-        return;
-      }
 
       const formData = new FormData();
       formData.append("operation", "create");
@@ -138,7 +133,6 @@ router.post("/postData", upload.single("file"), async (req, res) => {
       }else{
         return false;
       }
-
     }
   } catch (error) {
     console.error("Error:", error);
