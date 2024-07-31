@@ -9,17 +9,11 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({extended:false}));
+app.use(express.urlencoded({ extended: false }));
 
 
-app.use('/nekatel/api/crm',crmApi);
-app.use('/nekatel/api/deltaSib',deltasibApi);
+app.use('/nekatel/api/crm', crmApi);
+app.use('/nekatel/api/deltaSib', deltasibApi);
+app.use('/nekatel/api/getway', paymentApi);
 
-app.use('/nekatel/api/getway',paymentApi);
-
-app.post('/revert', (req, res) => {
-    console.log('Received revert request:', req.body);
-    res.send('Revert received');
-});
-
-app.listen(config.port,console.log(`it is running on ${config.port}`));  
+app.listen(config.port, console.log(`it is running on ${config.port}`));   
