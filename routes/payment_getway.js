@@ -68,6 +68,10 @@ router.post("/payment", async (req, res) => {
   }
 });
 
+// router.get('/test',(req,res)=>{
+//   res.redirect('http://localhost:5173');
+// });
+
 router.post('/revert', async(req, res) => {
     const terminalId="08175424";
     const answ = req.body;
@@ -93,7 +97,9 @@ router.post('/revert', async(req, res) => {
 
       console.log(response.data);
   
-      res.json(response.data);
+      res.redirect('http://localhost:3000/reserveProccess');
+      //res.json(response.data); 
+      
   
     } catch (error) {
       console.error("Error in API call: ", error);

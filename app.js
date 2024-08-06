@@ -16,4 +16,4 @@ app.use('/nekatel/api/crm', crmApi);
 app.use('/nekatel/api/deltaSib', deltasibApi);
 app.use('/nekatel/api/getway', paymentApi);
 
-app.listen(config.port, console.log(`it is running on ${config.port}`));   
+app.listen(config.port, console.log(`it is running`));   
