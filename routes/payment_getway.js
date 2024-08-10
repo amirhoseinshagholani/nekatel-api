@@ -4,6 +4,8 @@ import generateAuthenticationEnvelope from "../core/generateAuthenticationEnvelo
 import axios from "axios";
 import { v4 as uuidv4 } from 'uuid';
 import crypto from "crypto";
+import config from "config";
+import mysql from 'mysql2';
 
 const router = express.Router();
 router.use(cors());
@@ -16,6 +18,27 @@ function generateRequestId() {
 }
 
 router.post("/payment", async (req, res) => {
+  const conn = mysql.createConnection(config.db);
+  
+  conn.connect((err)=>{
+    if(err){
+      console.error('Error connecting: ' + err.stack);
+      return;
+    }
+    console.log('Connected as id ' + conn.threadId);
+  });
+
+  
+  conn.query(`INSERT INTO orders_header(order_number,customer_id,status,created_date,terminal_id,description,acceptor_id)
+      VALUES('123456','6','2','2023-08-10','555666','this is test','999888')`,(err,result)=>{
+        if(err) throw err;
+        console.log(result);
+  });
+  conn.end();
+  
+
+  console.log("yes");
+  return;
   const amount = parseInt(req.body.amount);
   const terminalId = "08175424";
   const passPhrase = req.body.passPhrase;
