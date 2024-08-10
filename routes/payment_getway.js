@@ -17,6 +17,24 @@ function generateRequestId() {
   return datePart + randomPart; 
 }
 
+function generateNumber(min,range){
+  return Math.floor(Math.random()*range)+min;
+}
+
+function getNow(){
+  let currentDate = new Date();
+
+  let year = currentDate.getFullYear();
+  let mounth = String(currentDate.getMonth()+1).padStart(2,'0');
+  let day = String(currentDate.getDay()+1).padStart(2,'0');
+
+  let hour = String(currentDate.getHours()).padStart(2,'0');
+  let minute = String(currentDate.getMinutes()).padStart(2,'0');
+  let second = String(currentDate.getSeconds()).padStart(2,'0');
+
+  return `${year}-${mounth}-${day} ${hour}:${minute}:${second}`;
+}
+
 router.post("/payment", async (req, res) => {
   const conn = mysql.createConnection(config.db);
   
@@ -28,21 +46,25 @@ router.post("/payment", async (req, res) => {
     console.log('Connected as id ' + conn.threadId);
   });
 
-  
+  const order_number=generateNumber(100000000000000,900000000000000);
+  const terminalId = "08175424";
+  const acceptorId = req.body.acceptorId;
+  const created_date = getNow();
+
   conn.query(`INSERT INTO orders_header(order_number,customer_id,status,created_date,terminal_id,description,acceptor_id)
-      VALUES('123456','6','2','2023-08-10','555666','this is test','999888')`,(err,result)=>{
+      VALUES('${order_number}','6','2','${created_date}','${terminalId}','this is test','${acceptorId}')`,(err,result)=>{
         if(err) throw err;
         console.log(result);
   });
   conn.end();
   
 
-  console.log("yes");
+  console.log(order_number);
   return;
   const amount = parseInt(req.body.amount);
-  const terminalId = "08175424";
+  
   const passPhrase = req.body.passPhrase;
-  const acceptorId = req.body.acceptorId;
+  
   // const amount = 10000;
   // const terminalId="08175424";
   // const passPhrase="0D7566C195C8B5B9";
