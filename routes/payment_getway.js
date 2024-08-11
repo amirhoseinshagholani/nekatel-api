@@ -8,7 +8,17 @@ import config from "config";
 import mysql from 'mysql2';
 
 const router = express.Router();
+
 router.use(cors());
+router.options('*',cors());
+router.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, PUT, POST");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+// router.use(allowCrossDomain);
+
 router.use(express.json());
 
 function generateRequestId() {
@@ -35,10 +45,10 @@ function getNow(){
   return `${year}-${mounth}-${day} ${hour}:${minute}:${second}`;
 }
 
-router.post('/test-redirect', (req, res) => {
-  console.log('tredt');
-  res.redirect("https://www.google.com");
+router.post('/test-redirect', async (req, res) => {
+    res.redirect("https://www.google.com");
 });
+
 
 router.post("/payment", async (req, res) => {
 
@@ -75,10 +85,10 @@ router.post("/payment", async (req, res) => {
 //////////////////////////////////////////////////////////////////////////////////
 
 
-  const amount = 14000;
+  const amount = parseInt(req.body.amount);
   const terminalId="08175424";
-  const passPhrase="0D7566C195C8B5B9";
-  const acceptorId="992180008175424";
+  const passPhrase=req.body.passPhrase;
+  const acceptorId=req.body.acceptorId;
   const envelope = generateAuthenticationEnvelope(amount, terminalId, passPhrase);
 
   const data = {
@@ -89,7 +99,7 @@ router.post("/payment", async (req, res) => {
       paymentId: null,
       requestId: generateRequestId(),
       requestTimestamp: Math.floor(Date.now() / 1000),
-      revertUri: "https://localhost:3000/nekatel/api/getway/revert",
+      revertUri: "http://localhost:3000/nekatel/api/getway/revert",
       terminalId: terminalId,
       transactionType: "Purchase"
     },
@@ -108,11 +118,8 @@ router.post("/payment", async (req, res) => {
       return res.status(400).json({ error: response.data.description });
     }
 
-    // res.json(response.data.result.token);
-    // res.redirect(`https://ikc.shaparak.ir/iuiv3/IPG/Index/?tokenIdentity=${response.data.result.token}`);
-
-
-  console.log(response.data.result.token);
+    res.redirect(`https://ikc.shaparak.ir/iuiv3/IPG/Index/?tokenIdentity=${response.data.result.token}`);
+    
   } catch (error) {
     console.error("Error in API call: ", error);
     if (error.response) {
@@ -126,9 +133,6 @@ router.post("/payment", async (req, res) => {
   }
 });
 
-// router.get('/test',(req,res)=>{
-//   res.redirect('http://localhost:5173');
-// });
 
 router.post('/revert', async(req, res) => {
     const terminalId="08175424";
@@ -156,7 +160,14 @@ router.post('/revert', async(req, res) => {
       console.log(response.data);
   
       res.redirect('http://localhost:3000/reserveProccess');
-      //res.json(response.data); 
+      // این روش اشتباه است. فقط داده جی سان باید برگردد
+      /*
+      const query = new URLSearchParams({
+          param1: req.body.param1,
+          param2: req.body.param2,
+      }).toString();
+      res.redirect(`https://www.example.com?${query}`);
+      */
       
   
     } catch (error) {
