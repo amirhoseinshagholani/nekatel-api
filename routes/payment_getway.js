@@ -35,40 +35,50 @@ function getNow(){
   return `${year}-${mounth}-${day} ${hour}:${minute}:${second}`;
 }
 
+router.post('/test-redirect', (req, res) => {
+  console.log('tredt');
+  res.redirect("https://www.google.com");
+});
+
 router.post("/payment", async (req, res) => {
-  const conn = mysql.createConnection(config.db);
-  
-  conn.connect((err)=>{
-    if(err){
-      console.error('Error connecting: ' + err.stack);
-      return;
-    }
-    console.log('Connected as id ' + conn.threadId);
-  });
 
-  const order_number=generateNumber(100000000000000,900000000000000);
-  const terminalId = "08175424";
-  const acceptorId = req.body.acceptorId;
-  const created_date = getNow();
-
-  conn.query(`INSERT INTO orders_header(order_number,customer_id,status,created_date,terminal_id,description,acceptor_id)
-      VALUES('${order_number}','6','2','${created_date}','${terminalId}','this is test','${acceptorId}')`,(err,result)=>{
-        if(err) throw err;
-        console.log(result);
-  });
-  conn.end();
+  // const conn = mysql.createConnection(config.db);
   
+  // conn.connect((err)=>{ 
+  //   if(err){
+  //     console.error('Error connecting: ' + err.stack);
+  //     return;
+  //   }
+  //   console.log('Connected as id ' + conn.threadId);
+  // });
 
-  console.log(order_number);
-  return;
-  const amount = parseInt(req.body.amount);
+  // const order_number=generateNumber(100000000000000,900000000000000);
+  // const terminalId = "08175424";
+  // const acceptorId = req.body.acceptorId;
+  // const created_date = getNow();
+
+  // // conn.query(`INSERT INTO orders_header(order_number,customer_id,status,created_date,terminal_id,description,acceptor_id)
+  // //     VALUES('${order_number}','6','2','${created_date}','${terminalId}','${null}','${acceptorId}')`,(err,result)=>{
+  // //       if(err) throw err;
+  // //       console.log(result);
+  // // });
+  // // conn.end();
+
+  // console.log(created_date);
+  // return;
+
   
-  const passPhrase = req.body.passPhrase;
+  // const passPhrase = req.body.passPhrase;
   
   // const amount = 10000;
-  // const terminalId="08175424";
-  // const passPhrase="0D7566C195C8B5B9";
-  // const acceptorId="992180008175424";
+
+//////////////////////////////////////////////////////////////////////////////////
+
+
+  const amount = 14000;
+  const terminalId="08175424";
+  const passPhrase="0D7566C195C8B5B9";
+  const acceptorId="992180008175424";
   const envelope = generateAuthenticationEnvelope(amount, terminalId, passPhrase);
 
   const data = {
@@ -79,7 +89,7 @@ router.post("/payment", async (req, res) => {
       paymentId: null,
       requestId: generateRequestId(),
       requestTimestamp: Math.floor(Date.now() / 1000),
-      revertUri: "https://api.nekatel.com/nekatel/api/getway/revert",
+      revertUri: "https://localhost:3000/nekatel/api/getway/revert",
       terminalId: terminalId,
       transactionType: "Purchase"
     },
@@ -98,8 +108,11 @@ router.post("/payment", async (req, res) => {
       return res.status(400).json({ error: response.data.description });
     }
 
-    res.json(response.data.result.token);
+    // res.json(response.data.result.token);
+    // res.redirect(`https://ikc.shaparak.ir/iuiv3/IPG/Index/?tokenIdentity=${response.data.result.token}`);
 
+
+  console.log(response.data.result.token);
   } catch (error) {
     console.error("Error in API call: ", error);
     if (error.response) {
